@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <title>notepadL</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-name">notepadL</span>
+  </div>
+  <div class="topbar-right">
+    <span id="userLabel" class="user-label"></span>
+    <button id="btnProfile" class="icon-btn hidden" title="Perfil e chave de acesso">&#128100;</button>
+    <button id="btnSettings" class="icon-btn" title="Definições do servidor">&#9881;</button>
+    <button id="btnLogout" class="icon-btn hidden" title="Sair">&#9099;</button>
+  </div>
+</header>
+
+<!-- ============ ESCOLHA DE VERSÃO ============ -->
+<section id="view-choice" class="view">
+  <div class="choice-title">ESCOLHA A VERSÃO</div>
+  <div class="choice-grid">
+    <button class="choice-card" data-mode="online">
+      <h3>Com autorização</h3>
+      <p>Nesta versão é necessário o registo de uma conta pessoal. As notas são guardadas num servidor e sincronizadas entre dispositivos, e pode partilhá-las com outros utilizadores.</p>
+    </button>
+    <button class="choice-card" data-mode="offline">
+      <h3>Sem autorização</h3>
+      <p>Esta versão não requer registo de conta. As notas ficam guardadas apenas neste navegador, não são sincronizadas nem partilhadas, e continuam disponíveis sem ligação à internet.</p>
+    </button>
+  </div>
+  <div class="choice-foot">
+    <a href="#" id="backFromChoice" class="link hidden">&laquo; Voltar às notas</a>
+  </div>
+</section>
+
+<!-- ============ AUTENTICAÇÃO ============ -->
+<section id="view-auth" class="view hidden">
+  <div class="auth-tabs">
+    <button class="tab active" data-tab="login">Entrada</button>
+    <button class="tab" data-tab="register">Registar</button>
+  </div>
+
+  <div id="msgBox" class="msg error hidden"></div>
+
+  <form id="formLogin" class="auth-form">
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" autocomplete="username" placeholder="nome@exemplo.pt" required>
+    </div>
+    <div class="field">
+      <label for="loginPassword">Senha</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••" required>
+    </div>
+    <button class="btn primary block" type="submit">Entrar</button>
+  </form>
+
+  <form id="formRegister" class="auth-form hidden">
+    <div class="field">
+      <label for="regEmail">Email</label>
+      <input type="email" id="regEmail" autocomplete="email" placeholder="nome@exemplo.pt" required>
+    </div>
+    <div class="field">
+      <label for="regUsername">Nome de utilizador</label>
+      <input type="text" id="regUsername" autocomplete="nickname" placeholder="o.seu.nome" required>
+    </div>
+    <div class="field">
+      <label for="regPassword">Senha</label>
+      <input type="password" id="regPassword" autocomplete="new-password" placeholder="mínimo 6 caracteres" required>
+    </div>
+    <button class="btn primary block" type="submit">Registar</button>
+  </form>
+
+  <div class="auth-foot">
+    <a href="#" id="backFromAuth" class="link">&laquo; Escolher uma versão diferente</a>
+  </div>
+</section>
+
+<!-- ============ APLICAÇÃO ============ -->
+<section id="view-app" class="view hidden">
+  <div class="app-grid">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <input id="search" type="text" placeholder="Pesquisar notas...">
+        <button id="btnNew" class="btn small primary" title="Nova nota">+</button>
+      </div>
+      <div class="sidebar-tabs">
+        <button class="mini-tab active" data-scope="mine">Minhas</button>
+        <button class="mini-tab" data-scope="shared">Partilhadas</button>
+        <button class="mini-tab" data-scope="team">Mural</button>
+      </div>
+      <ul id="noteList" class="note-list"></ul>
+      <div class="sidebar-foot">
+        <button id="btnTrash" class="link-btn">Reciclagem</button>
+        <button id="btnSync" class="link-btn" title="Sincronizar agora">Sincronizar</button>
+      </div>
+    </aside>
+
+    <main class="editor">
+      <div id="editorWrap" class="editor hidden" style="display:flex;flex:1;flex-direction:column;min-height:0;">
+        <div class="editor-head">
+          <input id="noteTitle" class="title-input" placeholder="Nova nota">
+          <div class="editor-actions">
+            <button id="btnShare" class="icon-btn" title="Partilhar nota">&#8644;</button>
+            <button id="btnPrint" class="icon-btn" title="Imprimir">&#9113;</button>
+            <button id="btnDownload" class="icon-btn" title="Descarregar">&#11123;</button>
+            <button id="btnDelete" class="icon-btn danger" title="Mover para a reciclagem">&#128465;</button>
+          </div>
+        </div>
+        <div class="toolbar" id="toolbar">
+          <button data-cmd="bold" title="Negrito"><b>B</b></button>
+          <button data-cmd="italic" title="Itálico"><i>I</i></button>
+          <button data-cmd="underline" title="Sublinhado"><u>U</u></button>
+          <button data-cmd="strikeThrough" title="Riscado"><s>S</s></button>
+          <span class="sep"></span>
+          <button data-cmd="formatBlock" data-arg="H2" title="Título">H</button>
+          <button data-cmd="insertUnorderedList" title="Lista com marcas">&#8226;</button>
+          <button data-cmd="insertOrderedList" title="Lista numerada">1.</button>
+          <button data-cmd="formatBlock" data-arg="BLOCKQUOTE" title="Citação">&#10077;</button>
+          <button data-cmd="formatBlock" data-arg="PRE" title="Código">&lt;/&gt;</button>
+          <span class="sep"></span>
+          <button data-cmd="createLink" title="Ligação">&#128279;</button>
+          <button data-cmd="removeFormat" title="Limpar formatação">&#10005;</button>
+        </div>
+        <div id="editor" class="editor-body" contenteditable="true" data-placeholder="Escreva aqui a sua nota..."></div>
+        <div class="editor-foot">
+          <span id="syncStatus">—</span>
+          <span id="shareInfo" class="share-info"></span>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <div style="font-size:26px;opacity:.35;">&#128221;</div>
+        <div>Selecione uma nota à esquerda<br>ou crie uma nova com o botão <b>+</b>.</div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ MODAL: PARTILHAR ============ -->
+<div id="modalShare" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>Partilhar nota</h4>
+      <button class="icon-btn" data-close="modalShare">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <input id="shareTarget" type="text" placeholder="email ou nome de utilizador" list="usersList">
+        <datalist id="usersList"></datalist>
+      </div>
+      <div class="field">
+        <select id="sharePerm">
+          <option value="READ">Pode ler</option>
+          <option value="EDIT">Pode editar</option>
+        </select>
+      </div>
+      <button id="btnDoShare" class="btn primary block">Partilhar</button>
+      <div id="shareMsg" class="msg hidden"></div>
+      <div class="hint">Quem receber a nota vê-a na aba «Partilhadas». Pode revogar o acesso a qualquer momento.</div>
+      <div id="shareList" style="display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="modalShare">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: RECICLAGEM ============ -->
+<div id="modalTrash" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>Reciclagem</h4>
+      <button class="icon-btn" data-close="modalTrash">&#10005;</button>
+    </div>
+    <div class="modal-body" id="trashList">
+      <div class="hint">Sem notas na reciclagem.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="modalTrash">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: PERFIL ============ -->
+<div id="modalProfile" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>Perfil</h4>
+      <button class="icon-btn" data-close="modalProfile">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="hint">Conta</div>
+      <div id="profileInfo" style="font-size:12px;line-height:1.6;"></div>
+      <div class="hint" style="margin-top:6px;">Chave de acesso pessoal</div>
+      <div id="profileKey" class="key-box">—</div>
+      <div style="display:flex;gap:6px;">
+        <button id="btnCopyKey" class="btn small">Copiar chave</button>
+        <button id="btnRegenKey" class="btn small">Gerar nova chave</button>
+      </div>
+      <div class="hint" style="margin-top:8px;">Alterar senha</div>
+      <input id="newPassword" type="password" placeholder="nova senha">
+      <button id="btnChangePass" class="btn small">Guardar senha</button>
+      <div id="profileMsg" class="msg hidden"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="modalProfile">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: DEFINIÇÕES ============ -->
+<div id="modalSettings" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>Definições do servidor</h4>
+      <button class="icon-btn" data-close="modalSettings">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="hint">Endereço da aplicação notepadL. Altere apenas se a aplicação for publicada noutro domínio.</div>
+      <input id="baseUrlInput" type="text" placeholder="https://...">
+      <button id="btnSaveBase" class="btn primary block">Guardar endereço</button>
+      <div id="settingsMsg" class="msg hidden"></div>
+      <div class="hint">Versão da extensão 1.0.0</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="modalSettings">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="api.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
